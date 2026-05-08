@@ -149,9 +149,9 @@ This project is licensed under the GNU AGPL v3.0 license.
 Based on AzerothCore:
 https://github.com/azerothcore/azerothcore-wotlk
 
-========================================================
-======================= ESPAÑOL ========================
-========================================================
+
+=============== ESPAÑOL =================
+
 
 Módulo de Casa de Subastas con IA dinámica para AzerothCore Playerbots.
 
