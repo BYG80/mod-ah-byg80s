@@ -449,6 +449,7 @@ private:
                     "BotAuction BUY PLAYER: ITEM={} PRICE={}",
                     auction->item_template,
                     auction->buyout);
+
                 // MARCAR COMO VENDIDA
                 auction->bidder = auction->owner;
                 auction->bid = auction->buyout;
@@ -458,27 +459,25 @@ private:
                     auction,
                     trans);
 
-                // ENVIAR ITEM AL COMPRADOR (BOT)
-                sAuctionMgr->SendAuctionWonMail(
-                    auction,
-                    trans);
-
-                // ELIMINAR SUBASTA CORRECTAMENTE
-                ah->RemoveAuction(auction);
-
+                // BORRAR DE DB
                 auction->DeleteFromDB(trans);
+
+                // GUARDAR PARA BORRAR LUEGO DEL MAP
+                auctionsToDelete.push_back(auction->Id);
 
                 ++bought;
             }
 
+            // BORRAR FUERA DEL LOOP
             for (uint32 auctionId : auctionsToDelete)
             {
-                AuctionEntry* auction =
-                    ah->GetAuction(auctionId);
+                AuctionEntry* auction = ah->GetAuction(auctionId);
 
                 if (auction)
                     ah->RemoveAuction(auction);
             }
+
+           
 
             CharacterDatabase.CommitTransaction(trans);
         }
