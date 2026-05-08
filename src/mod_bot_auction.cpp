@@ -449,29 +449,24 @@ private:
                     "BotAuction BUY PLAYER: ITEM={} PRICE={}",
                     auction->item_template,
                     auction->buyout);
+                // MARCAR COMO VENDIDA
+                auction->bidder = auction->owner;
+                auction->bid = auction->buyout;
 
                 // PAGAR ORO AL PLAYER
                 sAuctionMgr->SendAuctionSuccessfulMail(
                     auction,
                     trans);
 
-                // ELIMINAR ITEM
-                Item* item =
-                    sAuctionMgr->GetAItem(
-                        auction->item_guid);
+                // ENVIAR ITEM AL COMPRADOR (BOT)
+                sAuctionMgr->SendAuctionWonMail(
+                    auction,
+                    trans);
 
-                if (item)
-                {
-                    sAuctionMgr->RemoveAItem(
-                        auction->item_guid,
-                        true,
-                        &trans);
-                }
+                // ELIMINAR SUBASTA CORRECTAMENTE
+                ah->RemoveAuction(auction);
 
                 auction->DeleteFromDB(trans);
-
-                auctionsToDelete.push_back(
-                    auction->Id);
 
                 ++bought;
             }
