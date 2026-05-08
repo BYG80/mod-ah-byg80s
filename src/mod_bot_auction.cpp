@@ -6,9 +6,9 @@
 #include "World.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
-
-#include <unordered_map>
+#include "Mail.h"
 #include <vector>
+#include <unordered_map>
 
 struct BotAuctionItem
 {
@@ -41,7 +41,6 @@ public:
         LOG_INFO("server.loading", "╚════════════════════════════════════════════════════╝");
         LOG_INFO("server.loading", "");
 
-
         LoadItemsFromDB();
 
         LOG_INFO("server.loading",
@@ -52,6 +51,7 @@ public:
     void OnUpdate(uint32 diff) override
     {
         static uint32 timer = 0;
+
         timer += diff;
 
         if (timer < sConfigMgr->GetOption<uint32>("BotAuction.UpdateInterval", 30000))
@@ -84,7 +84,7 @@ private:
         time_t lastUpdate;
     };
 
-    std::unordered_map<uint32, PriceData> priceCache;
+    std::unordered_map<uint32, PriceData> _priceCache;
 
     /*==============================================*/
     /* LOAD ITEMS                                   */
@@ -118,10 +118,7 @@ private:
 
             item.itemId = itemId;
             item.category = fields[1].Get<std::string>();
-            item.chance = fields[2].Get<uint32>();
-
-            if (item.chance <= 0)
-                item.chance = 1;
+            item.chance = std::max<uint32>(1, fields[2].Get<uint32>());
 
             _items.push_back(item);
 
@@ -169,9 +166,9 @@ private:
     {
         time_t now = time(nullptr);
 
-        auto itr = priceCache.find(itemId);
+        auto itr = _priceCache.find(itemId);
 
-        if (itr != priceCache.end())
+        if (itr != _priceCache.end())
         {
             if ((now - itr->second.lastUpdate) < 600)
                 return itr->second.price;
@@ -210,47 +207,15 @@ private:
         }
 
         uint32 finalPrice =
-            uint32(base * frand(0.9f, 1.2f));
+            uint32(float(base) * frand(0.9f, 1.2f));
 
-        priceCache[itemId] =
+        _priceCache[itemId] =
         {
             finalPrice,
             now
         };
 
         return finalPrice;
-    }
-
-    uint32 GetSmartPrice(AuctionHouseObject* ah, uint32 itemId)
-    {
-        uint64 total = 0;
-        uint32 count = 0;
-
-        for (auto const& pair : ah->GetAuctions())
-        {
-            AuctionEntry* auction = pair.second;
-
-            if (!auction)
-                continue;
-
-            if (auction->item_template != itemId)
-                continue;
-
-            if (auction->buyout == 0)
-                continue;
-
-            // SOLO players
-            if (auction->owner.IsEmpty())
-                continue;
-
-            total += auction->buyout;
-            count++;
-        }
-
-        if (count > 0)
-            return uint32(total / count);
-
-        return GetBasePrice(itemId);
     }
 
     /*==============================================*/
@@ -269,7 +234,7 @@ private:
                 continue;
 
             if (auction->owner.IsEmpty())
-                count++;
+                ++count;
         }
 
         return count;
@@ -283,7 +248,7 @@ private:
 
         for (uint32 houseId : houses)
         {
-            auto ah =
+            AuctionHouseObject* ah =
                 sAuctionMgr->GetAuctionsMapByHouseId(
                     AuctionHouseId(houseId));
 
@@ -308,7 +273,7 @@ private:
                 continue;
 
             if (auction->item_template == itemId)
-                count++;
+                ++count;
         }
 
         return count;
@@ -335,7 +300,6 @@ private:
             sConfigMgr->GetOption<uint32>(
                 "BotAuction.MaxPerHouse", 700);
 
-        // IDs reales de tu core
         uint32 houses[] = { 2, 6, 7 };
 
         uint32 added = 0;
@@ -347,7 +311,7 @@ private:
         {
             uint32 houseId = houses[urand(0, 2)];
 
-            auto ah =
+            AuctionHouseObject* ah =
                 sAuctionMgr->GetAuctionsMapByHouseId(
                     AuctionHouseId(houseId));
 
@@ -362,7 +326,7 @@ private:
             if (!itemId)
                 continue;
 
-            if (CountItem(ah, itemId) > 4)
+            if (CountItem(ah, itemId) >= 4)
                 continue;
 
             Item* item =
@@ -382,7 +346,7 @@ private:
 
             auction->owner = ObjectGuid::Empty;
 
-            // IMPORTANTE PARA TU CORE
+            // TU CORE USA GUID COMPLETO
             auction->item_guid = item->GetGUID();
 
             auction->item_template = itemId;
@@ -393,7 +357,7 @@ private:
             auction->startbid = price;
 
             auction->buyout =
-                uint32(price * frand(1.1f, 1.4f));
+                uint32(float(price) * frand(1.1f, 1.4f));
 
             auction->bid = 0;
             auction->deposit = 0;
@@ -421,7 +385,7 @@ private:
                 itemId,
                 auction->buyout);
 
-            added++;
+            ++added;
         }
 
         CharacterDatabase.CommitTransaction(trans);
@@ -442,15 +406,7 @@ private:
     {
         uint32 maxBuys =
             sConfigMgr->GetOption<uint32>(
-                "BotAuction.MaxBuysPerCycle", 100);
-
-        float botRatio =
-            sConfigMgr->GetOption<float>(
-                "BotAuction.BotBuyRatio", 0.8f);
-
-        uint32 botChance =
-            sConfigMgr->GetOption<uint32>(
-                "BotAuction.BotBuyChance", 30);
+                "BotAuction.MaxBuysPerCycle", 10);
 
         uint32 houses[] = { 2, 6, 7 };
 
@@ -458,7 +414,7 @@ private:
 
         for (uint32 houseId : houses)
         {
-            auto ah =
+            AuctionHouseObject* ah =
                 sAuctionMgr->GetAuctionsMapByHouseId(
                     AuctionHouseId(houseId));
 
@@ -485,34 +441,21 @@ private:
 
                 bool isBot = auction->owner.IsEmpty();
 
-                uint32 market =
-                    GetSmartPrice(ah, auction->item_template);
-
-                if (market <= 0)
-                    market = 1;
-
-                float ratio =
-                    float(auction->buyout) / float(market);
-
-                bool shouldBuy = false;
-
-                // SIEMPRE compra players
-                if (!isBot)
-                {
-                    shouldBuy = true;
-                }
-                else
-                {
-                    if (ratio <= botRatio &&
-                        urand(0, 100) < botChance)
-                    {
-                        shouldBuy = true;
-                    }
-                }
-
-                if (!shouldBuy)
+                // NO comprar bots
+                if (isBot)
                     continue;
 
+                LOG_INFO("server.loading",
+                    "BotAuction BUY PLAYER: ITEM={} PRICE={}",
+                    auction->item_template,
+                    auction->buyout);
+
+                // PAGAR ORO AL PLAYER
+                sAuctionMgr->SendAuctionSuccessfulMail(
+                    auction,
+                    trans);
+
+                // ELIMINAR ITEM
                 Item* item =
                     sAuctionMgr->GetAItem(
                         auction->item_guid);
@@ -530,7 +473,7 @@ private:
                 auctionsToDelete.push_back(
                     auction->Id);
 
-                bought++;
+                ++bought;
             }
 
             for (uint32 auctionId : auctionsToDelete)
@@ -548,7 +491,7 @@ private:
         if (bought > 0)
         {
             LOG_INFO("server.loading",
-                "BotAuction: Bought {} auctions",
+                "BotAuction: Bought {} player auctions",
                 bought);
         }
     }
@@ -558,7 +501,5 @@ void Addmod_bot_auctionScripts()
 {
     new BotAuctionWorldScript();
 }
-
-
 
 
