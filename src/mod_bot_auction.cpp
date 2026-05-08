@@ -37,15 +37,16 @@ public:
         LOG_INFO("server.loading", "║           • Persistent economy system               ║");
         LOG_INFO("server.loading", "║════════════════════════════════════════════════════║");
         LOG_INFO("server.loading", "║                Created by Byg80s                   ║");
-        LOG_INFO("server.loading","║          Licensed under GNU AGPL v3.0              ║");
+        LOG_INFO("server.loading", "║          Licensed under GNU AGPL v3.0              ║");
         LOG_INFO("server.loading", "╚════════════════════════════════════════════════════╝");
         LOG_INFO("server.loading", "");
-   
 
 
         LoadItemsFromDB();
 
-        LOG_INFO("server.loading", "Byg80s AH Auction: Ready");
+        LOG_INFO("server.loading",
+            "BotAuction: Ready with {} items",
+            _items.size());
     }
 
     void OnUpdate(uint32 diff) override
@@ -53,7 +54,7 @@ public:
         static uint32 timer = 0;
         timer += diff;
 
-        if (timer < sConfigMgr->GetOption<uint32>("BotAuction.UpdateInterval", 60000))
+        if (timer < sConfigMgr->GetOption<uint32>("BotAuction.UpdateInterval", 30000))
             return;
 
         timer = 0;
@@ -68,7 +69,8 @@ public:
         }
         catch (std::exception const& e)
         {
-            LOG_ERROR("server.loading", "BotAuction ERROR: {}", e.what());
+            LOG_ERROR("server.loading",
+                "BotAuction ERROR: {}", e.what());
         }
     }
 
@@ -179,36 +181,36 @@ private:
             sObjectMgr->GetItemTemplate(itemId);
 
         if (!proto)
-            return urand(100, 500);
+            return 10000;
 
-        uint32 base = 100;
+        uint32 base = 1000;
 
         switch (proto->Quality)
         {
         case ITEM_QUALITY_POOR:
         case ITEM_QUALITY_NORMAL:
-            base = urand(50, 200);
+            base = urand(1000, 5000);
             break;
 
         case ITEM_QUALITY_UNCOMMON:
-            base = urand(400, 1500);
+            base = urand(5000, 25000);
             break;
 
         case ITEM_QUALITY_RARE:
-            base = urand(2000, 6000);
+            base = urand(25000, 80000);
             break;
 
         case ITEM_QUALITY_EPIC:
-            base = urand(7000, 15000);
+            base = urand(80000, 250000);
             break;
 
         default:
-            base = urand(100, 500);
+            base = urand(1000, 5000);
             break;
         }
 
         uint32 finalPrice =
-            uint32(base * frand(0.8f, 1.2f));
+            uint32(base * frand(0.9f, 1.2f));
 
         priceCache[itemId] =
         {
@@ -237,6 +239,7 @@ private:
             if (auction->buyout == 0)
                 continue;
 
+            // SOLO players
             if (auction->owner.IsEmpty())
                 continue;
 
@@ -274,12 +277,7 @@ private:
 
     uint32 CountTotalBots()
     {
-        uint32 houses[] =
-        {
-            uint32(AuctionHouseId::Alliance),
-            uint32(AuctionHouseId::Horde),
-            uint32(AuctionHouseId::Neutral)
-        };
+        uint32 houses[] = { 2, 6, 7 };
 
         uint32 total = 0;
 
@@ -324,25 +322,21 @@ private:
     {
         uint32 maxGlobal =
             sConfigMgr->GetOption<uint32>(
-                "BotAuction.MaxBotAuctions", 2000);
+                "BotAuction.MaxBotAuctions", 800);
 
         if (CountTotalBots() >= maxGlobal)
             return;
 
         uint32 perCycle =
             sConfigMgr->GetOption<uint32>(
-                "BotAuction.ItemsPerCycle", 20);
+                "BotAuction.ItemsPerCycle", 10);
 
         uint32 maxPerHouse =
             sConfigMgr->GetOption<uint32>(
                 "BotAuction.MaxPerHouse", 700);
 
-        uint32 houses[] =
-        {
-            uint32(AuctionHouseId::Alliance),
-            uint32(AuctionHouseId::Horde),
-            uint32(AuctionHouseId::Neutral)
-        };
+        // IDs reales de tu core
+        uint32 houses[] = { 2, 6, 7 };
 
         uint32 added = 0;
 
@@ -387,7 +381,11 @@ private:
                 sObjectMgr->GenerateAuctionID();
 
             auction->owner = ObjectGuid::Empty;
-            auction->item_guid = item->GetGUID();
+
+            // IMPORTANTE PARA TU CORE
+            auction->item_guid =
+                item->GetGUID().GetCounter();
+
             auction->item_template = itemId;
             auction->itemCount = item->GetCount();
 
@@ -400,6 +398,7 @@ private:
 
             auction->bid = 0;
             auction->deposit = 0;
+
             auction->bidder = ObjectGuid::Empty;
 
             auction->expire_time =
@@ -416,6 +415,12 @@ private:
             ah->AddAuction(auction);
 
             sAuctionMgr->AddAItem(item);
+
+            LOG_INFO("server.loading",
+                "BotAuction SELL: AH={} ITEM={} PRICE={}",
+                houseId,
+                itemId,
+                auction->buyout);
 
             added++;
         }
@@ -438,7 +443,7 @@ private:
     {
         uint32 maxBuys =
             sConfigMgr->GetOption<uint32>(
-                "BotAuction.MaxBuysPerCycle", 10);
+                "BotAuction.MaxBuysPerCycle", 100);
 
         float botRatio =
             sConfigMgr->GetOption<float>(
@@ -448,12 +453,7 @@ private:
             sConfigMgr->GetOption<uint32>(
                 "BotAuction.BotBuyChance", 30);
 
-        uint32 houses[] =
-        {
-            uint32(AuctionHouseId::Alliance),
-            uint32(AuctionHouseId::Horde),
-            uint32(AuctionHouseId::Neutral)
-        };
+        uint32 houses[] = { 2, 6, 7 };
 
         uint32 bought = 0;
 
@@ -497,15 +497,11 @@ private:
 
                 bool shouldBuy = false;
 
-                /* PLAYER AUCTIONS */
-
+                // SIEMPRE compra players
                 if (!isBot)
                 {
                     shouldBuy = true;
                 }
-
-                /* BOT AUCTIONS */
-
                 else
                 {
                     if (ratio <= botRatio &&
@@ -518,78 +514,22 @@ private:
                 if (!shouldBuy)
                     continue;
 
-                LOG_INFO("server.loading",
-                    "BotAuction BUY: AH={} ITEM={} PRICE={} PLAYER={}",
-                    houseId,
-                    auction->item_template,
-                    auction->buyout,
-                    !isBot);
+                Item* item =
+                    sAuctionMgr->GetAItem(
+                        ObjectGuid::LowType(auction->item_guid));
 
-                /* PLAYER PURCHASE */
-
-                if (!isBot)
+                if (item)
                 {
-                    auction->bidder = auction->owner;
-                    auction->bid = auction->buyout;
-
-                    sAuctionMgr->SendAuctionSuccessfulMail(
-                        auction,
-                        trans);
-
-                    Item* item =
-                        sAuctionMgr->GetAItem(
-                            auction->item_guid);
-
-                    if (item)
-                    {
-                        sAuctionMgr->RemoveAItem(
-                            auction->item_guid,
-                            true,
-                            &trans);
-                    }
-
-                    auction->DeleteFromDB(trans);
-
-                    auctionsToDelete.push_back(
-                        auction->Id);
-
-                    LOG_INFO("server.loading",
-                        "BotAuction PLAYER PURCHASE COMPLETE: ITEM={}",
-                        auction->item_template);
+                    sAuctionMgr->RemoveAItem(
+                        ObjectGuid::LowType(auction->item_guid),
+                        true,
+                        &trans);
                 }
 
-                /* BOT PURCHASE */
+                auction->DeleteFromDB(trans);
 
-                else
-                {
-                    auction->bidder = auction->owner;
-                    auction->bid = auction->buyout;
-
-                    sAuctionMgr->SendAuctionSuccessfulMail(
-                        auction,
-                        trans);
-
-                    sAuctionMgr->SendAuctionWonMail(
-                        auction,
-                        trans);
-
-                    Item* item =
-                        sAuctionMgr->GetAItem(
-                            auction->item_guid);
-
-                    if (item)
-                    {
-                        sAuctionMgr->RemoveAItem(
-                            auction->item_guid,
-                            true,
-                            &trans);
-                    }
-
-                    auction->DeleteFromDB(trans);
-
-                    auctionsToDelete.push_back(
-                        auction->Id);
-                }
+                auctionsToDelete.push_back(
+                    auction->Id);
 
                 bought++;
             }
@@ -619,4 +559,7 @@ void Addmod_bot_auctionScripts()
 {
     new BotAuctionWorldScript();
 }
+
+
+
 
