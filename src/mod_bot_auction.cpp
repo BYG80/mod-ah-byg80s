@@ -383,8 +383,7 @@ private:
             auction->owner = ObjectGuid::Empty;
 
             // IMPORTANTE PARA TU CORE
-            auction->item_guid =
-                item->GetGUID().GetCounter();
+            auction->item_guid = item->GetGUID();
 
             auction->item_template = itemId;
             auction->itemCount = item->GetCount();
@@ -516,12 +515,12 @@ private:
 
                 Item* item =
                     sAuctionMgr->GetAItem(
-                        ObjectGuid::LowType(auction->item_guid));
+                        auction->item_guid);
 
                 if (item)
                 {
                     sAuctionMgr->RemoveAItem(
-                        ObjectGuid::LowType(auction->item_guid),
+                        auction->item_guid,
                         true,
                         &trans);
                 }
