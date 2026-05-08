@@ -6,7 +6,8 @@
 
 Dynamic AI-powered Auction House module for AzerothCore Playerbots.
 
-This module automatically simulates a living Auction House economy by creating, buying and managing auctions with intelligent behavior and configurable pricing systems.
+This module automatically simulates a living Auction House economy by creating, 
+buying and managing auctions with intelligent behavior and configurable pricing systems.
 
 Designed specifically for AzerothCore Playerbots-based servers.
 
