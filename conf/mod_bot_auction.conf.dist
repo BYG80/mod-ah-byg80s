@@ -1,0 +1,106 @@
+###################################################################################################
+# AZEROTHCORE - BOT AUCTION HOUSE MODULE - BYG80S
+###################################################################################################
+
+[worldserver]
+
+###################################################################################################
+# GENERAL
+###################################################################################################
+
+# Enable / Disable system
+BotAuction.Enable = 1
+
+# Update interval in milliseconds
+# 60000 = 1 minute
+BotAuction.UpdateInterval = 30000
+
+###################################################################################################
+# BOT SELL SETTINGS (BOT -> AH)
+###################################################################################################
+
+# Maximum total bot auctions across all AHs
+BotAuction.MaxBotAuctions = 800
+
+# Auctions created each cycle
+BotAuction.ItemsPerCycle = 10
+
+# Maximum auctions per Auction House
+BotAuction.MaxPerHouse = 700
+
+###################################################################################################
+# BOT BUY SETTINGS (BOT -> PLAYER)
+###################################################################################################
+
+# Maximum purchases per cycle
+BotAuction.MaxBuysPerCycle = 100
+
+###################################################################################################
+# PLAYER AUTO BUY SYSTEM
+###################################################################################################
+
+# If enabled, bot will try to buy player auctions automatically
+BotAuction.AlwaysBuyPlayerItems = 1
+
+# Ignore player prices completely
+# 1 = buy anything
+# 0 = use multiplier protection
+BotAuction.IgnorePlayerPrice = 1
+
+# Maximum allowed multiplier over market price
+# Example:
+# Market = 100g
+# 3.0 = buys up to 300g
+BotAuction.MaxPlayerPriceMultiplier = 3.0
+
+###################################################################################################
+# NORMAL PLAYER MARKET LOGIC
+# (Only used if AlwaysBuyPlayerItems = 0)
+###################################################################################################
+
+# Buy ratio for normal player purchases
+BotAuction.PlayerBuyRatio = 1.2
+
+# Chance to buy valid player auctions
+BotAuction.PlayerBuyChance = 80
+
+###################################################################################################
+# BOT VS BOT MARKET
+###################################################################################################
+
+# Buy ratio used between bot auctions
+BotAuction.BotBuyRatio = 0.8
+
+# Chance of bot buying another bot auction
+BotAuction.BotBuyChance = 30
+
+###################################################################################################
+# PLAYER PRIORITY
+###################################################################################################
+
+# Prioritize player auctions over bot auctions
+BotAuction.EnablePlayerPriority = 1
+
+###################################################################################################
+# FALLBACK PRICE SYSTEM
+###################################################################################################
+
+# Used when there is no real market data
+BotAuction.FallbackPriceMultiplier = 1.3
+
+# Absolute minimum item price
+BotAuction.FallbackMinPrice = 1000
+
+###################################################################################################
+# DATABASE
+###################################################################################################
+
+# Bot item pool source:
+# q_ah.bot_auction_items
+#
+# Bots ONLY use items from this table for:
+# - bot selling
+# - bot internal market
+#
+# Players can sell ANY item.
+###################################################################################################
