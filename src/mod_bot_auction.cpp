@@ -344,7 +344,7 @@ private:
             auction->Id =
                 sObjectMgr->GenerateAuctionID();
 
-            auction->owner = ObjectGuid::Empty;
+            auction->owner.Clear();
 
             // TU CORE USA GUID COMPLETO
             auction->item_guid = item->GetGUID();
@@ -439,7 +439,7 @@ private:
                 if (auction->buyout == 0)
                     continue;
 
-                bool isBot = auction->owner.IsEmpty();
+                bool isBot = (auction->owner.GetCounter() == 0);
 
                 // NO comprar bots
                 if (isBot)
