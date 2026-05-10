@@ -1,299 +1,134 @@
-# Byg80s AH Auction
+# Byg80s AH Auction (V2.0 - Multiple Identities Update)
 
-==========ENGLISH =============
-
+========== ENGLISH =============
 
 Dynamic AI-powered Auction House module for AzerothCore Playerbots.
-
-This module automatically simulates a living Auction House economy by creating, 
-buying and managing auctions with intelligent behavior and configurable pricing systems.
+This module automatically simulates a living Auction House economy by creating, buying, and managing auctions with intelligent behavior, multiple identities, and configurable pricing systems.
 
 Designed specifically for AzerothCore Playerbots-based servers.
 
 --------------------------------------------------------
-COMPATIBILITY
+NEW FEATURES (V2.0)
 --------------------------------------------------------
-
-SUPPORTED CORE
-
-- AzerothCore WotLK
-- AzerothCore Playerbots Mod
-- AzerothCore Playerbot fork/core variants
-
-IMPORTANT
-
-This module uses Auction House systems available in Playerbots-compatible AzerothCore builds.
-
-It may NOT compile or work correctly on older or clean AzerothCore versions without Playerbots support.
-
-Recommended core:
-https://github.com/mod-playerbots/mod-playerbots
+- **Multi-Identity System**: The bot now uses a list of real character GUIDs to bid or buy, making the AH look populated by real players.
+- **Infinite Gold Logic**: Bots automatically recharge their gold if they run low, ensuring they never fail to buy a player's item.
+- **Smart Bidding**: Improved AI that decides between placing a bid or doing a direct buyout based on configurable chances.
 
 --------------------------------------------------------
 FEATURES
 --------------------------------------------------------
-
-- Automatic auction creation
-- Dynamic smart pricing system
-- AI buy/sell behavior
-- Configurable economy settings
-- Multi Auction House support
-- Lightweight and optimized
-- Playerbots core compatible
-- Fully configurable via .conf
+- Automatic auction creation.
+- Dynamic smart pricing system.
+- AI buy/sell behavior (Bid vs Buyout).
+- Configurable economy settings.
+- Multi Auction House support (Alliance, Horde, Neutral).
+- Lightweight and optimized.
+- Playerbots core compatible.
+- Fully configurable via .conf.
 
 --------------------------------------------------------
-REQUIREMENTS
+COMPATIBILITY
 --------------------------------------------------------
+SUPPORTED CORE:
+- AzerothCore WotLK.
+- AzerothCore Playerbots Mod.
+- AzerothCore Playerbot fork/core variants.
 
-- AzerothCore WotLK
-- Playerbots-compatible core REQUIRED
-- C++17 compatible compiler
+IMPORTANT: This module requires a Playerbots-compatible core to work correctly.
+Recommended core: https://github.com/mod-playerbots/mod-playerbots
 
 --------------------------------------------------------
 INSTALLATION
 --------------------------------------------------------
+1. **Clone the module**:
+   Place the module inside your server modules folder:
+   cd modules
+   git clone https://github.com/BYG80/mod-ah-byg80s.git
 
-1. Clone the module
+2. **Re-run CMake**:
+   After adding the module, re-run CMake and rebuild your server.
 
-Place the module inside your server modules folder:
+3. **Import SQL**:
+   Create the required table inside your world database:
+   
+   CREATE TABLE IF NOT EXISTS `bot_auction_items` (
+     `item_id` INT UNSIGNED NOT NULL,
+     `category` VARCHAR(50) NOT NULL DEFAULT '',
+     `chance` INT UNSIGNED NOT NULL DEFAULT 1,
+     PRIMARY KEY (`item_id`)
+   );
 
-cd modules
-git clone https://github.com/BYG80/mod-ah-byg80s.git
-
---------------------------------------------------------
-
-2. Re-run CMake
-
-After adding the module, re-run CMake and rebuild your server.
-
---------------------------------------------------------
-
-3. Import SQL
-
-Create the required table inside your world database:
-
-CREATE TABLE IF NOT EXISTS `bot_auction_items` (
-  `item_id` INT UNSIGNED NOT NULL,
-  `category` VARCHAR(50) NOT NULL DEFAULT '',
-  `chance` INT UNSIGNED NOT NULL DEFAULT 1,
-  PRIMARY KEY (`item_id`)
-);
-
---------------------------------------------------------
-
-4. Add auction items
-
-Example:
-
-INSERT INTO bot_auction_items (`item_id`, `category`, `chance`) VALUES
-(4306, 'trade', 100),
-(14047, 'cloth', 80),
-(1725, 'weapon', 40);
-
---------------------------------------------------------
-
-5. Configuration
-
-Copy:
-
-mod_ah_bgy80s.conf.dist
-
-to:
-
-mod_ah_bgy80s.conf
-
-and edit the settings as desired.
+4. **Configuration**:
+   Copy `mod_ah_bgy80s.conf.dist` to `mod_ah_bgy80s.conf` and add your character GUIDs to `BotAuction.DummyBidderList`.
 
 --------------------------------------------------------
 EXAMPLE CONFIGURATION
 --------------------------------------------------------
-
 BotAuction.Enable = 1
-BotAuction.UpdateInterval = 60000
-BotAuction.MaxBotAuctions = 2000
-BotAuction.ItemsPerCycle = 20
-BotAuction.MaxBuysPerCycle = 10
-
---------------------------------------------------------
-CONSOLE BANNER
---------------------------------------------------------
-
-╔══════════════════════════════════════════════╗
-║              Byg80s AH Auction              ║
-╠══════════════════════════════════════════════╣
-║   Dynamic Auction House AI for AzerothCore  ║
-║                                              ║
-║   • Automatic auctions                       ║
-║   • Smart pricing system                     ║
-║   • Auto buy/sell behavior                   ║
-║                                              ║
-║   github.com/BYG80/mod-ah-byg80s             ║
-╚══════════════════════════════════════════════╝
-
---------------------------------------------------------
-NOTES
---------------------------------------------------------
-
-- Bot-owned auctions use empty GUIDs.
-- Smart prices adapt automatically based on market activity.
-- Recommended for solo/progressive servers.
-- Optimized for Playerbots environments.
+BotAuction.UpdateInterval = 30000
+BotAuction.AlwaysBuyPlayerItems = 0
+BotAuction.ChanceToBuy = 35
+BotAuction.ChanceToBid = 60
+BotAuction.DummyBidderList = 4001,4002,4003,4005,4007,4010
 
 --------------------------------------------------------
 LICENSE
 --------------------------------------------------------
-
 This project is licensed under the GNU AGPL v3.0 license.
-
-Based on AzerothCore:
-https://github.com/azerothcore/azerothcore-wotlk
 
 
 =============== ESPAÑOL =================
 
-
 Módulo de Casa de Subastas con IA dinámica para AzerothCore Playerbots.
-
-Este módulo simula automáticamente una economía viva dentro de la Casa de Subastas mediante la creación, compra y gestión inteligente de subastas con un sistema configurable de precios dinámicos.
+Simula una economía viva mediante la creación, compra y gestión inteligente de subastas con identidades múltiples y precios dinámicos.
 
 Diseñado específicamente para servidores basados en AzerothCore Playerbots.
 
 --------------------------------------------------------
-COMPATIBILIDAD
+NOVEDADES (V2.0)
 --------------------------------------------------------
-
-CORE COMPATIBLE
-
-- AzerothCore WotLK
-- AzerothCore Playerbots Mod
-- Variantes/forks compatibles con Playerbots
-
-IMPORTANTE
-
-Este módulo utiliza sistemas de Casa de Subastas disponibles en versiones compatibles con Playerbots.
-
-Puede NO compilar o funcionar correctamente en versiones antiguas o limpias de AzerothCore sin soporte Playerbots.
-
-Core recomendado:
-https://github.com/mod-playerbots/mod-playerbots
+- **Sistema de Identidades Múltiples**: El bot utiliza una lista de GUIDs de personajes reales para pujar o comprar.
+- **Oro Infinito**: Los bots recargan su oro automáticamente si se quedan sin fondos, garantizando que siempre puedan comprar tus objetos.
+- **Pujas Inteligentes**: IA mejorada que decide entre pujar o comprar directamente según probabilidades configurables.
 
 --------------------------------------------------------
 CARACTERÍSTICAS
 --------------------------------------------------------
-
-- Creación automática de subastas
-- Sistema inteligente de precios dinámicos
-- Comportamiento IA de compra/venta
-- Economía configurable
-- Soporte para múltiples Casas de Subastas
-- Ligero y optimizado
-- Compatible con cores Playerbots
-- Totalmente configurable mediante .conf
+- Creación automática de subastas.
+- Sistema inteligente de precios dinámicos.
+- Comportamiento de compra/venta realista (Puja vs Compra directa).
+- Soporte para múltiples Casas de Subastas (Alianza, Horda, Neutral).
+- Ligero y optimizado.
+- Totalmente configurable mediante .conf.
 
 --------------------------------------------------------
-REQUISITOS
+COMPATIBILIDAD
 --------------------------------------------------------
-
-- AzerothCore WotLK
-- Core compatible con Playerbots OBLIGATORIO
-- Compilador compatible con C++17
+CORE COMPATIBLE:
+- AzerothCore WotLK.
+- AzerothCore Playerbots Mod.
+- Variantes/forks compatibles con Playerbots.
 
 --------------------------------------------------------
 INSTALACIÓN
 --------------------------------------------------------
+1. **Clonar el módulo**:
+   cd modules
+   git clone https://github.com/BYG80/mod-ah-byg80s.git
 
-1. Clonar el módulo
+2. **Ejecutar CMake**:
+   Vuelve a ejecutar CMake y recompila el servidor.
 
-Coloca el módulo dentro de la carpeta modules del servidor:
+3. **Importar SQL**:
+   Crea la tabla necesaria dentro de tu base de datos world (ver código SQL en la sección en inglés).
 
-cd modules
-git clone https://github.com/BYG80/mod-ah-byg80s.git
-
---------------------------------------------------------
-
-2. Ejecutar nuevamente CMake
-
-Después de añadir el módulo, vuelve a ejecutar CMake y recompila el servidor.
-
---------------------------------------------------------
-
-3. Importar SQL
-
-Crea la tabla necesaria dentro de tu base de datos world:
-
-CREATE TABLE IF NOT EXISTS `bot_auction_items` (
-  `item_id` INT UNSIGNED NOT NULL,
-  `category` VARCHAR(50) NOT NULL DEFAULT '',
-  `chance` INT UNSIGNED NOT NULL DEFAULT 1,
-  PRIMARY KEY (`item_id`)
-);
-
---------------------------------------------------------
-
-4. Añadir objetos para las subastas
-
-Ejemplo:
-
-INSERT INTO bot_auction_items (`item_id`, `category`, `chance`) VALUES
-(4306, 'trade', 100),
-(14047, 'cloth', 80),
-(1725, 'weapon', 40);
-
---------------------------------------------------------
-
-5. Configuración
-
-Copia:
-
-mod_ah_bgy80s.conf.dist
-
-a:
-
-mod_ah_bgy80s.conf
-
-y edita los valores según tus necesidades.
-
---------------------------------------------------------
-CONFIGURACIÓN DE EJEMPLO
---------------------------------------------------------
-
-BotAuction.Enable = 1
-BotAuction.UpdateInterval = 60000
-BotAuction.MaxBotAuctions = 2000
-BotAuction.ItemsPerCycle = 20
-BotAuction.MaxBuysPerCycle = 10
-
---------------------------------------------------------
-BANNER DE CONSOLA
---------------------------------------------------------
-
-╔══════════════════════════════════════════════╗
-║              Byg80s AH Auction              ║
-╠══════════════════════════════════════════════╣
-║   Dynamic Auction House AI for AzerothCore  ║
-║                                              ║
-║   • Automatic auctions                       ║
-║   • Smart pricing system                     ║
-║   • Auto buy/sell behavior                   ║
-║                                              ║
-║   github.com/BYG80/mod-ah-byg80s             ║
-╚══════════════════════════════════════════════╝
+4. **Configurar**:
+   Copia `mod_ah_bgy80s.conf.dist` a `mod_ah_bgy80s.conf` y edita los valores. Añade los GUIDs de tus personajes en `BotAuction.DummyBidderList`.
 
 --------------------------------------------------------
 NOTAS
 --------------------------------------------------------
-
-- Las subastas del bot utilizan GUID vacío.
-- Los precios inteligentes se adaptan automáticamente según el mercado.
-- Recomendado para servidores single player o progresivos.
-- Optimizado para entornos Playerbots.
-
---------------------------------------------------------
-LICENCIA
---------------------------------------------------------
-
-Este proyecto está licenciado bajo GNU AGPL v3.0.
-
-Basado en AzerothCore:
-https://github.com/azerothcore/azerothcore-wotlk
+- Las subastas puestas por el bot aparecen con GUID vacío para diferenciarlas.
+- Los precios inteligentes se adaptan automáticamente según la actividad.
+- Recomendado para servidores Single Player o Progresivos.
+- Optimizado para entornos con muchos Playerbots.
