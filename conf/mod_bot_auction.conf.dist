@@ -1,6 +1,6 @@
 ###################################################################################################
 #                                                                                                 #
-#                      BYG80S DYNAMIC AUCTION HOUSE SYSTEM - CONFIGURATION                        #
+#                      BYG80S DYNAMIC AUCTION HOUSE SYSTEM - CONFIGURATION V2                     #
 #                                                                                                 #
 ###################################################################################################
 
@@ -43,33 +43,29 @@ BotAuction.ItemsPerCycle = 10
 ###################################################################################################
 #
 #    BotAuction.AlwaysBuyPlayerItems
-#        Descripción: Si se activa (1), el bot COMPRARÁ SIEMPRE los items de los jugadores
-#                     en cuanto pase el tiempo de MinDelayMinutes, ignorando el azar.
-#                     Si se desactiva (0), usará los porcentajes de ChanceToBuy/Bid.
+#        Descripción: Si se activa (1), el bot COMPRARÁ SIEMPRE los items de los jugadores.
+#                     Si se desactiva (0), usará azar para decidir si puja o compra (Recomendado: 0).
 BotAuction.AlwaysBuyPlayerItems = 1
 
 #
 #    BotAuction.ChanceToBuy
-#        Descripción: Probabilidad (0-100) de que el bot compre un objeto tuyo directamente.
-#                     (Solo funciona si AlwaysBuyPlayerItems = 0).
+#        Descripción: Probabilidad (0-100) de que el bot compre un objeto directamente.
 BotAuction.ChanceToBuy = 35
 
 #
 #    BotAuction.ChanceToBid
 #        Descripción: Probabilidad (0-100) de que el bot haga una puja en tu objeto.
-#                     (Solo funciona si AlwaysBuyPlayerItems = 0).
-BotAuction.ChanceToBid = 50
+BotAuction.ChanceToBid = 60
 
 #
 #    BotAuction.MaxBuysPerCycle
 #        Descripción: Límite de compras exitosas que el bot puede hacer en un solo ciclo.
-BotAuction.MaxBuysPerCycle = 10
+BotAuction.MaxBuysPerCycle = 15
 
 #
 #    BotAuction.MinDelayMinutes
-#        Descripción: Tiempo de "espera realista". El bot no tocará tus items hasta que lleven
-#                     puestos X minutos.
-BotAuction.MinDelayMinutes = 10
+#        Descripción: Tiempo de espera antes de que el bot toque un item recién puesto.
+BotAuction.MinDelayMinutes = 5
 
 #
 ###################################################################################################
@@ -77,24 +73,25 @@ BotAuction.MinDelayMinutes = 10
 ###################################################################################################
 #
 #    BotAuction.MaxPlayerPriceMultiplier
-#        Descripción: Multiplicador sobre el precio de venta (SellPrice) del item al NPC.
-#                     Si un item vale 1g y pones 2.0, el bot NO pagará más de 2g.
-BotAuction.MaxPlayerPriceMultiplier = 2.0
+#        Descripción: Multiplicador sobre el precio de venta al NPC. 
+#                     Subido a 50.0 para aceptar precios de mercado de jugadores.
+BotAuction.MaxPlayerPriceMultiplier = 10.0
 
 #
 #    BotAuction.MaxAbsolutePrice
-#        Descripción: Precio máximo absoluto que el bot pagará por cualquier cosa (en cobre).
-#                     Ejemplo: 250000 = 25 Oro.
-BotAuction.MaxAbsolutePrice = 250000
+#        Descripción: Precio máximo absoluto que el bot pagará (en cobre).
+#                     Ejemplo: 10000000 = 1000 Oro.
+BotAuction.MaxAbsolutePrice = 10000000
 
 #
 ###################################################################################################
-# SECCIÓN 4: IDENTIDAD DEL BOT
+# SECCIÓN 4: IDENTIDAD DEL BOT (MÚLTIPLE)
 ###################################################################################################
 #
-#    BotAuction.DummyBidderGUID
-#        Descripción: GUID del personaje que aparecerá como pujador en la interfaz.
-#                     IMPORTANTE: Este personaje DEBE existir en la tabla 'characters'.
-BotAuction.DummyBidderGUID = 1
+#    BotAuction.DummyBidderList
+#        Descripción: Lista de GUIDs de personajes separados por comas. 
+#                     El bot elegirá uno al azar de esta lista para cada compra.
+#                     IMPORTANTE: Estos personajes DEBEN existir en la tabla 'characters'.
+BotAuction.DummyBidderList = 4002,4003,4005,4007,4010,4022
 
 ###################################################################################################

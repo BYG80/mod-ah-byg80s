@@ -11,6 +11,8 @@
 #include "GameTime.h"
 #include "Player.h"
 #include <vector>
+#include <string>
+#include <sstream>
 
 struct BotAuctionItem {
     uint32 itemId;
@@ -45,13 +47,11 @@ public:
     void OnUpdate(uint32 diff) override {
         static uint32 timer = 0;
         timer += diff;
-
         uint32 interval = sConfigMgr->GetOption<uint32>("BotAuction.UpdateInterval", 30000);
         if (timer < interval) return;
         timer = 0;
 
         if (!sConfigMgr->GetOption<bool>("BotAuction.Enable", true)) return;
-
         SellItems();
         BuyItems();
     }
@@ -77,11 +77,9 @@ private:
     }
 
     void SellItems() {
-        uint32 maxGlobal = sConfigMgr->GetOption<uint32>("BotAuction.MaxBotAuctions", 1500);
         uint32 maxPerHouse = sConfigMgr->GetOption<uint32>("BotAuction.MaxPerHouse", 700);
         uint32 houses[] = { 2, 6, 7 };
         uint32 perCycle = sConfigMgr->GetOption<uint32>("BotAuction.ItemsPerCycle", 10);
-
         if (_items.empty()) return;
 
         for (uint32 houseId : houses) {
@@ -95,7 +93,6 @@ private:
 
                 Item* item = Item::CreateItem(tItem.itemId, 1);
                 if (!item) continue;
-
                 CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
                 item->SaveToDB(trans);
 
@@ -125,63 +122,73 @@ private:
         uint32 houses[] = { 2, 6, 7 };
         uint32 now = uint32(GameTime::GetGameTime().count());
 
+        std::string guidStr = sConfigMgr->GetOption<std::string>("BotAuction.DummyBidderList", "4001");
+        std::vector<uint32> bidderGuids;
+        std::stringstream ss(guidStr);
+        std::string segment;
+        while (std::getline(ss, segment, ',')) {
+            if (!segment.empty()) bidderGuids.push_back(std::stoul(segment));
+        }
+        if (bidderGuids.empty()) bidderGuids.push_back(4001);
+
         bool forceBuy = sConfigMgr->GetOption<bool>("BotAuction.AlwaysBuyPlayerItems", false);
         uint32 chanceBuy = sConfigMgr->GetOption<uint32>("BotAuction.ChanceToBuy", 35);
         uint32 chanceBid = sConfigMgr->GetOption<uint32>("BotAuction.ChanceToBid", 50);
         uint32 minDelay = sConfigMgr->GetOption<uint32>("BotAuction.MinDelayMinutes", 10) * 60;
         uint32 maxBuys = sConfigMgr->GetOption<uint32>("BotAuction.MaxBuysPerCycle", 10);
-        float maxMult = sConfigMgr->GetOption<float>("BotAuction.MaxPlayerPriceMultiplier", 2.0f);
-        uint32 maxAbsPrice = sConfigMgr->GetOption<uint32>("BotAuction.MaxAbsolutePrice", 250000);
-        ObjectGuid dummyBidder = ObjectGuid::Create<HighGuid::Player>(sConfigMgr->GetOption<uint32>("BotAuction.DummyBidderGUID", 1));
+        float maxMult = sConfigMgr->GetOption<float>("BotAuction.MaxPlayerPriceMultiplier", 50.0f);
+        uint32 maxAbsPrice = sConfigMgr->GetOption<uint32>("BotAuction.MaxAbsolutePrice", 10000000);
 
         for (uint32 houseId : houses) {
             AuctionHouseObject* ah = sAuctionMgr->GetAuctionsMapByHouseId(AuctionHouseId(houseId));
             if (!ah) continue;
-
             uint32 buysThisCycle = 0;
             std::vector<uint32> toDelete;
 
             for (auto const& [id, auction] : ah->GetAuctions()) {
                 if (!auction || buysThisCycle >= maxBuys) continue;
-
                 if (auction->expire_time > (now + 172800 - minDelay)) continue;
+                if (auction->owner.IsEmpty()) continue;
 
-                if (!auction->owner.IsEmpty()) {
-                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(auction->item_template);
-                    if (!proto) continue;
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(auction->item_template);
+                if (!proto) continue;
 
-                    uint32 maxAllowedPrice = (proto->SellPrice > 0) ? uint32(proto->SellPrice * maxMult) : maxAbsPrice;
-                    if (auction->buyout > maxAllowedPrice || auction->buyout > maxAbsPrice) continue;
+                uint32 maxAllowedPrice = (proto->SellPrice > 0) ? uint32(proto->SellPrice * maxMult) : maxAbsPrice;
+                if (auction->buyout > maxAllowedPrice || auction->buyout > maxAbsPrice) continue;
 
-                    uint32 roll = urand(1, 100);
+                uint32 roll = urand(1, 100);
+                uint32 randomGuid = bidderGuids[urand(0, bidderGuids.size() - 1)];
+                ObjectGuid dummyBidder = ObjectGuid::Create<HighGuid::Player>(randomGuid);
 
-                    // LOGICA DE COMPRA (Prioriza forceBuy)
-                    if ((forceBuy || roll <= chanceBuy) && auction->buyout > 0) {
+                // --- SISTEMA DE RECARGA AUTOMÁTICA DE ORO ---
+                // Le damos 1000 de Oro al bot si tiene menos de 100 de Oro
+                CharacterDatabase.Execute("UPDATE characters SET money = money + 10000000 WHERE guid = {} AND money < 1000000", randomGuid);
+                // --------------------------------------------
+
+                if ((forceBuy || roll <= chanceBuy) && auction->buyout > 0) {
+                    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                    auction->bidder = dummyBidder;
+                    auction->bid = auction->buyout;
+                    sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
+                    auction->DeleteFromDB(trans);
+                    CharacterDatabase.CommitTransaction(trans);
+                    toDelete.push_back(auction->Id);
+                    buysThisCycle++;
+                }
+                else if (!forceBuy && roll <= (chanceBuy + chanceBid)) {
+                    uint32 currentPrice = auction->bid > 0 ? auction->bid : auction->startbid;
+                    uint32 raise = uint32(currentPrice * 0.05f) + 1000;
+                    uint32 newBid = currentPrice + raise;
+                    if (auction->buyout == 0 || newBid < auction->buyout) {
                         CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-                        auction->bid = auction->buyout;
-                        sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
-                        auction->DeleteFromDB(trans);
+                        if (!auction->bidder.IsEmpty())
+                            sAuctionMgr->SendAuctionOutbiddedMail(auction, newBid, nullptr, trans);
+
+                        auction->bidder = dummyBidder;
+                        auction->bid = newBid;
+                        sAuctionMgr->GetAuctionHouseSearcher()->UpdateBid(auction);
+                        auction->SaveToDB(trans);
                         CharacterDatabase.CommitTransaction(trans);
-                        toDelete.push_back(auction->Id);
-                        buysThisCycle++;
-                    }
-                    // LOGICA DE PUJA
-                    else if (!forceBuy && roll <= (chanceBuy + chanceBid)) {
-                        uint32 currentPrice = auction->bid > 0 ? auction->bid : auction->startbid;
-                        uint32 raise = uint32(currentPrice * 0.05f) + 1000;
-                        uint32 newBid = currentPrice + raise;
-
-                        if (auction->buyout == 0 || newBid < auction->buyout) {
-                            CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-                            if (!auction->bidder.IsEmpty())
-                                sAuctionMgr->SendAuctionOutbiddedMail(auction, newBid, nullptr, trans);
-
-                            auction->bidder = dummyBidder;
-                            auction->bid = newBid;
-                            sAuctionMgr->GetAuctionHouseSearcher()->UpdateBid(auction);
-                            auction->SaveToDB(trans);
-                            CharacterDatabase.CommitTransaction(trans);
-                        }
                     }
                 }
             }
@@ -193,4 +200,5 @@ private:
 };
 
 void Addmod_bot_auctionScripts() { new BotAuctionWorldScript(); }
-       
+
+
