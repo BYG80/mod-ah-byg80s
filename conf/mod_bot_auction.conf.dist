@@ -1,124 +1,100 @@
 ###################################################################################################
-<<<<<<< HEAD
-# AZEROTHCORE - BOT AUCTION HOUSE MODULE - BYG80S (UPDATED)
-=======
-# BOT AUCTION HOUSE MODULE
->>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
+#                                                                                                 #
+#                      BYG80S DYNAMIC AUCTION HOUSE SYSTEM - CONFIGURATION                        #
+#                                                                                                 #
 ###################################################################################################
 
 [worldserver]
 
-<<<<<<< HEAD
-###################################################################################################
-# GENERAL
-###################################################################################################
-
-# Habilitar o deshabilitar el módulo
+#
+#    BotAuction.Enable
+#        Descripción: Activa o desactiva el sistema completo de subastas dinámicas.
+#        Default:     1 (Activado)
 BotAuction.Enable = 1
 
-# Intervalo de actualización en milisegundos (30000 = 30 segundos)
+#
+#    BotAuction.UpdateInterval
+#        Descripción: Tiempo de espera entre cada ciclo de revisión del bot (en milisegundos).
+#        Default:     30000 (30 segundos)
 BotAuction.UpdateInterval = 30000
 
+#
 ###################################################################################################
-# VENTAS DEL BOT (BOT -> AH)
+# SECCIÓN 1: SISTEMA DE VENTAS (BOT -> AH)
 ###################################################################################################
+#
+#    BotAuction.MaxBotAuctions
+#        Descripción: Cantidad máxima de objetos que los bots pondrán en total en el mundo.
+BotAuction.MaxBotAuctions = 1500
 
-# Máximo total de subastas creadas por bots en todas las casas de subastas
-BotAuction.MaxBotAuctions = 800
-
-# Cantidad de objetos que el bot intenta poner a la venta en cada ciclo
-BotAuction.ItemsPerCycle = 10
-
-# Máximo de subastas permitidas por cada casa individual (Horda, Alianza, Neutral)
+#
+#    BotAuction.MaxPerHouse
+#        Descripción: Límite de objetos por cada casa (Alianza, Horda, Neutral).
 BotAuction.MaxPerHouse = 700
 
+#
+#    BotAuction.ItemsPerCycle
+#        Descripción: Cuántos items nuevos pone el bot a la venta cada vez que se actualiza.
+BotAuction.ItemsPerCycle = 10
+
+#
 ###################################################################################################
-# COMPRAS DEL BOT A JUGADORES (BOT -> PLAYER)
+# SECCIÓN 2: SISTEMA DE COMPRAS Y PUJAS (BOT -> JUGADOR)
 ###################################################################################################
+#
+#    BotAuction.AlwaysBuyPlayerItems
+#        Descripción: Si se activa (1), el bot COMPRARÁ SIEMPRE los items de los jugadores
+#                     en cuanto pase el tiempo de MinDelayMinutes, ignorando el azar.
+#                     Si se desactiva (0), usará los porcentajes de ChanceToBuy/Bid.
+BotAuction.AlwaysBuyPlayerItems = 1
 
-# Máximo de compras que el bot puede realizar en un solo ciclo (para no vaciar la AH de golpe)
-BotAuction.MaxBuysPerCycle = 20
+#
+#    BotAuction.ChanceToBuy
+#        Descripción: Probabilidad (0-100) de que el bot compre un objeto tuyo directamente.
+#                     (Solo funciona si AlwaysBuyPlayerItems = 0).
+BotAuction.ChanceToBuy = 35
 
-# ¿Comprar siempre al jugador? 
-# 1 = El bot comprará casi todo lo que pongas (siempre que el precio sea justo).
-# 0 = El bot usará la probabilidad definida en 'PlayerBuyChance'.
-BotAuction.AlwaysBuyPlayerItems = 0
+#
+#    BotAuction.ChanceToBid
+#        Descripción: Probabilidad (0-100) de que el bot haga una puja en tu objeto.
+#                     (Solo funciona si AlwaysBuyPlayerItems = 0).
+BotAuction.ChanceToBid = 50
 
-# Probabilidad (0-100) de que el bot decida comprar un objeto de un jugador en cada ciclo.
-BotAuction.PlayerBuyChance = 80
-=======
-BotAuction.Enable = 1
-BotAuction.UpdateInterval = 30000
+#
+#    BotAuction.MaxBuysPerCycle
+#        Descripción: Límite de compras exitosas que el bot puede hacer en un solo ciclo.
+BotAuction.MaxBuysPerCycle = 10
 
+#
+#    BotAuction.MinDelayMinutes
+#        Descripción: Tiempo de "espera realista". El bot no tocará tus items hasta que lleven
+#                     puestos X minutos.
+BotAuction.MinDelayMinutes = 10
 
+#
 ###################################################################################################
-# SELL SYSTEM
+# SECCIÓN 3: CONTROL DE ECONOMÍA Y PRECIOS
 ###################################################################################################
-
-BotAuction.MaxBotAuctions = 600
-BotAuction.ItemsPerCycle = 8
-BotAuction.MaxPerHouse = 400
-
-
-###################################################################################################
-# BUY SYSTEM
-###################################################################################################
-
-BotAuction.MaxBuysPerCycle = 8
-BotAuction.PlayerBuyChance = 25
-
-
-###################################################################################################
-# PRICE CONTROL
-###################################################################################################
-
-BotAuction.MaxPlayerPriceMultiplier = 1.5
-BotAuction.MaxAbsolutePrice = 250000
-
->>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
-
-# --- SISTEMA DE PRECIO JUSTO ---
-# Multiplicador máximo sobre el precio base.
-# Ejemplo: Si un item vale 10g y el multiplicador es 2.0, el bot NO comprará si el precio es > 20g.
-# Esto evita que los jugadores abusen del bot con precios absurdos.
+#
+#    BotAuction.MaxPlayerPriceMultiplier
+#        Descripción: Multiplicador sobre el precio de venta (SellPrice) del item al NPC.
+#                     Si un item vale 1g y pones 2.0, el bot NO pagará más de 2g.
 BotAuction.MaxPlayerPriceMultiplier = 2.0
 
-# Si se pone en 1, el bot ignorará el precio y comprará cualquier cosa (No recomendado)
-BotAuction.IgnorePlayerPrice = 0
+#
+#    BotAuction.MaxAbsolutePrice
+#        Descripción: Precio máximo absoluto que el bot pagará por cualquier cosa (en cobre).
+#                     Ejemplo: 250000 = 25 Oro.
+BotAuction.MaxAbsolutePrice = 250000
+
+#
+###################################################################################################
+# SECCIÓN 4: IDENTIDAD DEL BOT
+###################################################################################################
+#
+#    BotAuction.DummyBidderGUID
+#        Descripción: GUID del personaje que aparecerá como pujador en la interfaz.
+#                     IMPORTANTE: Este personaje DEBE existir en la tabla 'characters'.
+BotAuction.DummyBidderGUID = 1
 
 ###################################################################################################
-<<<<<<< HEAD
-# MERCADO INTERNO (BOT -> BOT)
-###################################################################################################
-
-# Probabilidad (0-100) de que un bot le compre a otro bot. 
-# Sirve para que los objetos roten y la casa de subastas se mantenga limpia.
-BotAuction.BotBuyChance = 30
-
-# Ratio de precio utilizado en el mercado interno de bots.
-BotAuction.BotBuyRatio = 0.8
-
-###################################################################################################
-# CONFIGURACIÓN DE BASE DE DATOS
-###################################################################################################
-
-# El bot utiliza la tabla 'bot_auction_items' en la base de datos 'world' (o la que indiques).
-# Los bots SOLO crearán subastas de los items que estén en esa tabla.
-# Los jugadores pueden vender CUALQUIER item, el bot los analizará según las reglas anteriores.
-###################################################################################################
-=======
-# MODE
-###################################################################################################
-
-# 0 = REALISTIC
-# 1 = FORCE BUY EVERYTHING (SAFE)
-BotAuction.ForceBuyAll = 0
-
-
-###################################################################################################
-# SAFE FORCE MODE OPTIONS
-###################################################################################################
-
-BotAuction.MaxGoldSpendPerCycle = 500000
-BotAuction.MinBuyValue = 1000
->>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
