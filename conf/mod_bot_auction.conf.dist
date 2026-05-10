@@ -1,9 +1,14 @@
 ###################################################################################################
+<<<<<<< HEAD
 # AZEROTHCORE - BOT AUCTION HOUSE MODULE - BYG80S (UPDATED)
+=======
+# BOT AUCTION HOUSE MODULE
+>>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
 ###################################################################################################
 
 [worldserver]
 
+<<<<<<< HEAD
 ###################################################################################################
 # GENERAL
 ###################################################################################################
@@ -41,6 +46,36 @@ BotAuction.AlwaysBuyPlayerItems = 0
 
 # Probabilidad (0-100) de que el bot decida comprar un objeto de un jugador en cada ciclo.
 BotAuction.PlayerBuyChance = 80
+=======
+BotAuction.Enable = 1
+BotAuction.UpdateInterval = 30000
+
+
+###################################################################################################
+# SELL SYSTEM
+###################################################################################################
+
+BotAuction.MaxBotAuctions = 600
+BotAuction.ItemsPerCycle = 8
+BotAuction.MaxPerHouse = 400
+
+
+###################################################################################################
+# BUY SYSTEM
+###################################################################################################
+
+BotAuction.MaxBuysPerCycle = 8
+BotAuction.PlayerBuyChance = 25
+
+
+###################################################################################################
+# PRICE CONTROL
+###################################################################################################
+
+BotAuction.MaxPlayerPriceMultiplier = 1.5
+BotAuction.MaxAbsolutePrice = 250000
+
+>>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
 
 # --- SISTEMA DE PRECIO JUSTO ---
 # Multiplicador máximo sobre el precio base.
@@ -52,6 +87,7 @@ BotAuction.MaxPlayerPriceMultiplier = 2.0
 BotAuction.IgnorePlayerPrice = 0
 
 ###################################################################################################
+<<<<<<< HEAD
 # MERCADO INTERNO (BOT -> BOT)
 ###################################################################################################
 
@@ -70,3 +106,19 @@ BotAuction.BotBuyRatio = 0.8
 # Los bots SOLO crearán subastas de los items que estén en esa tabla.
 # Los jugadores pueden vender CUALQUIER item, el bot los analizará según las reglas anteriores.
 ###################################################################################################
+=======
+# MODE
+###################################################################################################
+
+# 0 = REALISTIC
+# 1 = FORCE BUY EVERYTHING (SAFE)
+BotAuction.ForceBuyAll = 0
+
+
+###################################################################################################
+# SAFE FORCE MODE OPTIONS
+###################################################################################################
+
+BotAuction.MaxGoldSpendPerCycle = 500000
+BotAuction.MinBuyValue = 1000
+>>>>>>> 40fa7d8ee9cd3dd0c30039e533cc73e967a43fd4
