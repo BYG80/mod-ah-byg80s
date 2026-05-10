@@ -1,5 +1,5 @@
 ###################################################################################################
-# AZEROTHCORE - BOT AUCTION HOUSE MODULE - BYG80S
+# AZEROTHCORE - BOT AUCTION HOUSE MODULE - BYG80S (UPDATED)
 ###################################################################################################
 
 [worldserver]
@@ -8,99 +8,65 @@
 # GENERAL
 ###################################################################################################
 
-# Enable / Disable system
+# Habilitar o deshabilitar el módulo
 BotAuction.Enable = 1
 
-# Update interval in milliseconds
-# 60000 = 1 minute
+# Intervalo de actualización en milisegundos (30000 = 30 segundos)
 BotAuction.UpdateInterval = 30000
 
 ###################################################################################################
-# BOT SELL SETTINGS (BOT -> AH)
+# VENTAS DEL BOT (BOT -> AH)
 ###################################################################################################
 
-# Maximum total bot auctions across all AHs
+# Máximo total de subastas creadas por bots en todas las casas de subastas
 BotAuction.MaxBotAuctions = 800
 
-# Auctions created each cycle
+# Cantidad de objetos que el bot intenta poner a la venta en cada ciclo
 BotAuction.ItemsPerCycle = 10
 
-# Maximum auctions per Auction House
+# Máximo de subastas permitidas por cada casa individual (Horda, Alianza, Neutral)
 BotAuction.MaxPerHouse = 700
 
 ###################################################################################################
-# BOT BUY SETTINGS (BOT -> PLAYER)
+# COMPRAS DEL BOT A JUGADORES (BOT -> PLAYER)
 ###################################################################################################
 
-# Maximum purchases per cycle
-BotAuction.MaxBuysPerCycle = 100
+# Máximo de compras que el bot puede realizar en un solo ciclo (para no vaciar la AH de golpe)
+BotAuction.MaxBuysPerCycle = 20
 
-###################################################################################################
-# PLAYER AUTO BUY SYSTEM
-###################################################################################################
+# ¿Comprar siempre al jugador? 
+# 1 = El bot comprará casi todo lo que pongas (siempre que el precio sea justo).
+# 0 = El bot usará la probabilidad definida en 'PlayerBuyChance'.
+BotAuction.AlwaysBuyPlayerItems = 0
 
-# If enabled, bot will try to buy player auctions automatically
-BotAuction.AlwaysBuyPlayerItems = 1
-
-# Ignore player prices completely
-# 1 = buy anything
-# 0 = use multiplier protection
-BotAuction.IgnorePlayerPrice = 1
-
-# Maximum allowed multiplier over market price
-# Example:
-# Market = 100g
-# 3.0 = buys up to 300g
-BotAuction.MaxPlayerPriceMultiplier = 3.0
-
-###################################################################################################
-# NORMAL PLAYER MARKET LOGIC
-# (Only used if AlwaysBuyPlayerItems = 0)
-###################################################################################################
-
-# Buy ratio for normal player purchases
-BotAuction.PlayerBuyRatio = 1.2
-
-# Chance to buy valid player auctions
+# Probabilidad (0-100) de que el bot decida comprar un objeto de un jugador en cada ciclo.
 BotAuction.PlayerBuyChance = 80
 
+# --- SISTEMA DE PRECIO JUSTO ---
+# Multiplicador máximo sobre el precio base.
+# Ejemplo: Si un item vale 10g y el multiplicador es 2.0, el bot NO comprará si el precio es > 20g.
+# Esto evita que los jugadores abusen del bot con precios absurdos.
+BotAuction.MaxPlayerPriceMultiplier = 2.0
+
+# Si se pone en 1, el bot ignorará el precio y comprará cualquier cosa (No recomendado)
+BotAuction.IgnorePlayerPrice = 0
+
 ###################################################################################################
-# BOT VS BOT MARKET
+# MERCADO INTERNO (BOT -> BOT)
 ###################################################################################################
 
-# Buy ratio used between bot auctions
-BotAuction.BotBuyRatio = 0.8
-
-# Chance of bot buying another bot auction
+# Probabilidad (0-100) de que un bot le compre a otro bot. 
+# Sirve para que los objetos roten y la casa de subastas se mantenga limpia.
 BotAuction.BotBuyChance = 30
 
-###################################################################################################
-# PLAYER PRIORITY
-###################################################################################################
-
-# Prioritize player auctions over bot auctions
-BotAuction.EnablePlayerPriority = 1
+# Ratio de precio utilizado en el mercado interno de bots.
+BotAuction.BotBuyRatio = 0.8
 
 ###################################################################################################
-# FALLBACK PRICE SYSTEM
+# CONFIGURACIÓN DE BASE DE DATOS
 ###################################################################################################
 
-# Used when there is no real market data
-BotAuction.FallbackPriceMultiplier = 1.3
-
-# Absolute minimum item price
-BotAuction.FallbackMinPrice = 1000
-
-###################################################################################################
-# DATABASE
-###################################################################################################
-
-# Bot item pool source:
-# q_ah.bot_auction_items
-#
-# Bots ONLY use items from this table for:
-# - bot selling
-# - bot internal market
-#
-# Players can sell ANY item.
+# El bot utiliza la tabla 'bot_auction_items' en la base de datos 'world' (o la que indiques).
+# Los bots SOLO crearán subastas de los items que estén en esa tabla.
+# Los jugadores pueden vender CUALQUIER item, el bot los analizará según las reglas anteriores.
 ###################################################################################################
